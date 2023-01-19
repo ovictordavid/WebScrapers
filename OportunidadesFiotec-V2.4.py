@@ -7,7 +7,7 @@ from datetime import datetime
 import csv
 import pandas as pd
 
-#GET OPPORTUNITIES FIOTEC
+#MAIN FUNCTION AND SUBFUNCTIONS
 def get_opportunities_from_fiotec(url):
     # Version2.4 - 01.2023 - get local and data, one function structure, minor modifications
     # Oportunidades Fiotec 
@@ -24,7 +24,7 @@ def get_opportunities_from_fiotec(url):
         if num_opp == 0:
             print("There are no opportunites open")
         else:
-            print(f"Today we found {num_opp} these opportunities and urls: ")
+            print(f"Today we found {num_opp} opportunitie(s) and url(s): ")
             print()
             print("Here are the dic for each opportunitie")
 
@@ -87,13 +87,13 @@ def get_opportunities_from_fiotec(url):
         description = scrapp_description.replace('\xa0', ' ')
 
         # get date
-
-        registration_date
-
-        '''if re.findall('[0-9][0-9][/][0-9][0-9][/][0-9][0-9][0-9][0-9]', scrapp_description):
-            due_date = re.findall('[0-9][0-9][/][0-9][0-9][/][0-9][0-9][0-9][0-9]', scrapp_description)[0]
-            # incluir caso para pegar padrão "até xxxx"
-            print(due_date)'''
+        #registration_date
+        registration_date = data_html.find_all('time', {'itemprop': 'datePublished'})
+        registration_date = re.findall('[0-9][0-9][0-9][0-9][-][0-3][0-9][-][0-3][0-9]', str(registration_date))[0]
+        Y,m,d = str(registration_date).split('-')
+        registration_date = d+'/'+m+'/'+Y
+        # registration_due_date - waiting for test
+        registration_due_date = re.search(r".[0-9] de .* de [0-9][0-9][0-9][0-9]", description)[0]
 
         # list of paragr
         list_paragr = list_main.find_all('p')
@@ -126,7 +126,7 @@ def get_opportunities_from_fiotec(url):
                 k = paragr.text
                 dic_description[k] = v
 
-            # get title and url for additional informations (PDF additional info)
+            #get title and url for additional informations (PDF additional info)
             elif paragr == list_paragr[-1]:
                 k = paragr.text
                 k = k.replace('\xa0', '')
@@ -157,7 +157,7 @@ def get_opportunities_from_fiotec(url):
 
         # get study_field and prerequisite_course
         if "Formação necessária" in dic_description:
-            study_field = re.search(r'área.* de .*.', dic_description["Formação necessária"])
+            study_field = re.search(r'área.* de .*.', dic_description["Formação necessária"])[0]
             prerequisite_course = dic_description["Formação necessária"]
             # print(study_field)
             # print(prerequisite_course)
@@ -189,14 +189,11 @@ def get_opportunities_from_fiotec(url):
         else:
             link = "Not mentioned"
 
-        # print(dic_description)
-
         #get city
         if "Local de atuação" in dic_description:
             city = dic_description["Local de atuação"]
         else:
             city = "Not mentioned"
-
 
         # zips into dict
         main_k = title
@@ -217,19 +214,15 @@ def get_opportunities_from_fiotec(url):
         result_dict['link'] = link
         result_dict['city'] = city
         result_dict['registration_date'] = registration_date
+        result_dict['registration_due_date'] = registration_due_date
+
         # print(result_dict)
-        ### DATA
-
-
-        registration_due_date = ''
-        begin_date = ''
 
         # possible fields
         # weekly_workhours - not mentioned in previous opportunities 01.2023
         # total_workhours - not mentioned in previous opportunities 01.2023
         # scholarship_value = '' - metioned in PDF
         #department = '' - specify in local variable
-
 
         return main_k, result_dict
 
@@ -267,8 +260,10 @@ def get_opportunities_from_fiotec(url):
 
     dic_opport_variables = build_opportunities_fiotec(dic_opport)
     show(dic_opport, dic_opport_variables)
-    #teste = build_soup('https://www.fiotec.fiocruz.br/vagas-projetos/em-analise/8034-banco-de-curriculos-cooperacao-fiocruz-e-ministerio-da-saude')
-    #scrapp_description()
+
+    #for test
+    #x = build_soup('https://www.fiotec.fiocruz.br/vagas-projetos/em-analise/8031-analista-de-sistemas-temporario')
+    #scrapp_description(x)
 
 #MAIN
 get_opportunities_from_fiotec('https://www.fiotec.fiocruz.br/vagas-projetos/processo-de-selecao')
